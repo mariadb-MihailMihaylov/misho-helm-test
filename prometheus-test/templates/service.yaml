@@ -1,0 +1,23 @@
+{{- range $env, $regions := .Values.cloud }}
+{{- if or (eq $env $.Values.env) (eq $.Values.env "all") }}
+{{- range $region, $scope := $regions }}
+{{- if or (eq $region $.Values.region) (eq $.Values.region "all") }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "prometheus-test.fullname" $ }}
+  labels:
+    {{- include "prometheus-test.labels" $ | nindent 4 }}
+spec:
+  type: {{ default $.Values.default.service.type ( $scope.service ).type }}
+  ports:
+    - port: {{ default $.Values.default.service.port ($scope.service ).port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "prometheus-test.selectorLabels" $ | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
